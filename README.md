@@ -212,19 +212,19 @@ All multi-byte fields are encoded as little endian.
     Header (optional):
     ------------------
     
-        Field Name      Type,       Size (bytes)    Description
-        ---------------------------------------------------------
-        "JFFY"          ASCII,          4           File 'magic number' identifier (jiffy.JIFFY)
-        version         uint8,          1           Version of the Jiffy file format (jiffy.VERSION)
-        shape           uint32,         8           shape of scans, (rows, cols)
-        scansPerFrame   uint8,          1           Number of scans in a frame, min=1
-        framesPerGroup  uint32,         4           Number of frames in a group, 
-                                                    0:          no groups, first frame is an I scan, 
-                                                                all others are adaptive
+    Field Name      Type,       Size (bytes)    Description
+    -------------------------------------------------------------------------------------------
+    "JFFY"          ASCII,          4           File 'magic number' identifier (jiffy.JIFFY)
+    version         uint8,          1           Version of the Jiffy file format (jiffy.VERSION)
+    shape           uint32,         8           shape of scans, (rows, cols)
+    scansPerFrame   uint8,          1           Number of scans in a frame, min=1
+    framesPerGroup  uint32,         4           Number of frames in a group, 
+                                                0:          no groups, first frame is an I scan, 
+                                                            all others are adaptive
 
-                                                    1:          all frames are I scans
+                                                1:          all frames are I scans
 
-                                                    2 or more:  first frame in group is an I scan, 
-                                                                all others in the group are adaptive
+                                                2 or more:  first frame in group is an I scan, 
+                                                            all others in the group are adaptive
 
-        framePrecisions uint8,      scansPerFrame   list of precision values, one for each scan type
+    framePrecisions uint8,      scansPerFrame   list of precision values, one for each scan type
