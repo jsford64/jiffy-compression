@@ -180,17 +180,6 @@ Jiffy was written and tested using Python 10.3.
 
 ### Encoded Stream Format
 
-           Description
-            ---------------------------------------------------------
-            "JFFY"          ASCII,          4           File 'magic number' identifier (jiffy.JIFFY)
-            version         uint8,          1           Version of the Jiffy file format (jiffy.VERSION)
-            shape           uint32,         8           shape of scans, (rows, cols)
-            scansPerFrame   uint8,          1           Number of scans in a frame, min=1
-            framesPerGroup  uint32,         4           Number of frames in a group, 
-                                                        0:          no groups, first frame is an I scan, 
-                                                                    all others are adaptive
-
-                                                        1:          all frames are I scans
 All multi-byte fields are encoded as little endian.
 
     Stream:
