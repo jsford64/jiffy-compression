@@ -18,17 +18,17 @@ Jiffy was written and tested using Python 10.3.
 
 ## Jiffy Constants
 
-VERSION = np.uint16(1.0 * 256)  Current Jiffy version.
-MAGIC = b'JFFY'                 'Magic Number' for Jiffy encoded data/files.
-ADAPTIVE = 0                    Encode scan as I or P according to adaptive scan algorithm.
-ISCAN    = 1                    Encode scan as I only.
+    VERSION = np.uint16(1.0 * 256)  Current Jiffy version.
+    MAGIC = b'JFFY'                 'Magic Number' for Jiffy encoded data/files.
+    ADAPTIVE = 0                    Encode scan as I or P according to adaptive scan algorithm.
+    ISCAN    = 1                    Encode scan as I only.
 
 ## Jiffy Stream Codec Class
 
     Stream( scansPerFrame:np.uint8 = 1, framesPerGroup:int = 10, byteStream:ByteStream = b'', 
             precision:np.uint8 = 1, header:bool = True )
 
-)
+
     Compresses/decompresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
     
 ### Stream() Constructor Arguments
@@ -212,9 +212,19 @@ All multi-byte fields are encoded as little endian.
     Header (optional):
     ------------------
     
-        Field Name      Type,       Size (bytes) 
+        Field Name      Type,       Size (bytes)    Description
+        ---------------------------------------------------------
+        "JFFY"          ASCII,          4           File 'magic number' identifier (jiffy.JIFFY)
+        version         uint8,          1           Version of the Jiffy file format (jiffy.VERSION)
+        shape           uint32,         8           shape of scans, (rows, cols)
+        scansPerFrame   uint8,          1           Number of scans in a frame, min=1
+        framesPerGroup  uint32,         4           Number of frames in a group, 
+                                                    0:          no groups, first frame is an I scan, 
+                                                                all others are adaptive
+
+                                                    1:          all frames are I scans
+
                                                     2 or more:  first frame in group is an I scan, 
                                                                 all others in the group are adaptive
 
         framePrecisions uint8,      scansPerFrame   list of precision values, one for each scan type
-
