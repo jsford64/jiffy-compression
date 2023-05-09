@@ -2,8 +2,6 @@
 import jiffy as jf
 import numpy as np
 import matplotlib.pyplot as plt
-from jf_pipecodecs import JiffyAdaptiveMaskP4 as OGjiffy
-from jf_pipecodecs import SensorInfo
 
 def fake_scan(shape, precision=1, out_of_range_percent=0.2, dtype=np.float32):
     scan = np.zeros(shape, dtype=np.float32)
@@ -19,7 +17,7 @@ def fake_scan(shape, precision=1, out_of_range_percent=0.2, dtype=np.float32):
     run = lambda : np.uint32(np.abs(np.random.normal(out_of_range_percent*w, w//16)))
 
     # Insert a random length run() of zeros in the middle of the scan
-    
+
     for i in range(h):
         dx = run()
         start = w//2 - dx//2
@@ -52,14 +50,14 @@ with open(fname, 'wb+') as f:
             # Create a fake frame and save it for later comparison
             frame = [fake_scan(shape, precision=precision, dtype=d) for d in frameDtypes]
             origFrames.append(frame)
-            # Encode the frame      
+            # Encode the frame
             stream.encode(frame)
             encodedModes.append(stream.frameModes)
 
 # Close the stream
 stream.close()
 
-# Reopen (or rewind) the stream for decoding. 
+# Reopen (or rewind) the stream for decoding.
 
 # Stream must be opened in binary r/w mode ('rb+'),
 # or you can rewind the encoded stream to the
@@ -95,5 +93,3 @@ with open(fname, 'rb+') as f:
         assert match(stream.frameDtypes, frameDtypes)
 
 print('\nSuccess!')
-
-
