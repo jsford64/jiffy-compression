@@ -108,4 +108,4 @@ with open(fname, 'rb+') as f:
         # ensure the frame dtypes are the same as the original
         assert match(stream.frameDtypes, frameDtypes)
 
-print('\nSuccess!')
+print('Success!')

@@ -110,10 +110,9 @@ class ByteStream(BufferedRandom):
         '''Get the size in bytes of the entire encoded buffer/file without
         using system calls or re-reading the whole file.
         '''
-        self.flush()
         pos = self.tell()
-        self.seek(0)
-        len = pos - self.tell()
+        self.seek(0, 2)
+        len = self.tell()
         self.seek(pos)
         return len
 
@@ -154,7 +153,6 @@ class ByteStream(BufferedRandom):
         self.seek(offset)
         self.writeField(val)
         self.seek(pos)
-    
 
     def peekField(self, dtype):
         '''

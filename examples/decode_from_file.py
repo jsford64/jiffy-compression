@@ -36,11 +36,10 @@ def decode_from_file(jiffy_file):
         print(f"  framesPerGroup: {header['framesPerGroup']}")
         print(f"  scanPrecisions: {header['framePrecisions']}")
 
-        frames = stream.decode()
-        for frame in frames:
-            for s in range(scansPerFrame):
-                print(s)
-                plt.imshow(frame[s])
+        for frame in stream.decode():
+            print(len(frame))
+            for scan in frame:
+                plt.imshow(s)
                 plt.show()
         stream.close()
 
