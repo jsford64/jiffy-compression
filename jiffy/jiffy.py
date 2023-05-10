@@ -890,7 +890,7 @@ class Scan:
         Decode each scan from the byteStream.
         '''
         # Read the scan length from the byteStream
-        nBytes = self.byteStream.readUInt32()
+        nBytes = self.byteStream.readField(dtype=np.uint32)
         if nBytes < 0:
             self.codecState.iScan = True
             nBytes = -nBytes
