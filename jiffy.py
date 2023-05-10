@@ -4,6 +4,7 @@ from collections import OrderedDict
 import pyfastpfor as p4
 import zstandard as zstd
 from io import BytesIO,BufferedRandom, BufferedReader, BufferedWriter
+from os import path
 
 VERSION = np.uint16(1.0 * 256)
 MAGIC = b'JFFY'
@@ -58,19 +59,19 @@ class ByteStream(BufferedRandom):
             # convert to BytesIO
             buffer = BytesIO(buffer)
 
-        # elif isinstance(self.buffer,(BufferedReader,BufferedWriter,BufferedRandom,BytesIO,ByteStream)):
-        #     buffer = buffer
+        elif isinstance(buffer,(BufferedReader,BufferedWriter,BufferedRandom,BytesIO,ByteStream)):
+            buffer = buffer
 
-        # elif isinstance(buffer,str):
-        #     # If the file exists, open it for binary read with random access
-        #     # If the file does not exist, create it and open it for r/w with random access
-        #     if io.path.exists(str):
-        #         buffer = open(buffer,'rb+')
-        #     else:
-        #         buffer = open(buffer,'wb+')
-        # else:
-        #     print(type(buffer))
-        #     raise TypeError
+        elif isinstance(buffer,str):
+            # If the file exists, open it for binary read with random access
+            # If the file does not exist, create it and open it for r/w with random access
+            if path.exists(buffer):
+                buffer = open(buffer,'rb+')
+            else:
+                buffer = open(buffer,'wb+')
+        else:
+            print(type(buffer))
+            raise TypeError
 
         super().__init__(buffer)
 
