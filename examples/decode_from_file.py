@@ -3,7 +3,7 @@
 import os
 import sys
 import path
-sys.path.append(path.Path(__file__).abspath().parent)
+sys.path.append(path.Path(__file__).abspath().parent.parent)
 import jiffy as jf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,7 +30,7 @@ def decode_from_file(jiffy_file):
         print("Header")
         print("--------------------------------------")
         print(f"  magic:          {header['magic']}")
-        print(f"  version:        {header['version']}")
+        print(f"  version:        {header['version']//256}.{header['version']%256}")
         print(f"  shape:          {header['shape']}")
         print(f"  scansPerFrame:  {header['scansPerFrame']}")
         print(f"  framesPerGroup: {header['framesPerGroup']}")
