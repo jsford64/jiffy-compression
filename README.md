@@ -1,5 +1,13 @@
+![image](https://github.com/jsford64/jiffy-compression/assets/9753764/e35eca31-fb40-4987-8316-fc2f611d53c2)
+
 # jiffy-compression
 Jiffy- a fast, lossless SIMD compression codec for LiDAR streams
+
+Read the peer-reviewed publication accepted for presentation at IEEE ICRA 2023 in London:
+'Lossless SIMD Compression of LiDAR Range and Attribute Scan Sequences' here: 
+https://arxiv.org/pdf/2209.08196.pdf
+
+![image](https://github.com/jsford64/jiffy-compression/assets/9753764/8238d9d0-1acd-49f2-87a0-de2087328322)
 
 ## Dependencies
 
