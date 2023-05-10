@@ -16,6 +16,10 @@ Jiffy was written and tested using Python 10.3.
 
         pip install zstandard
 
+## Examples
+
+Look at test.py for an example of how to compress and decompress a LiDAR sequence to a file or byte string.
+
 ## Jiffy Constants
 
     VERSION = np.uint16(1.0 * 256)  Current Jiffy version.
