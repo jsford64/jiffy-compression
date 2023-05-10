@@ -24,6 +24,35 @@ Jiffy was written and tested using Python 10.3.
 
         pip install zstandard
 
+## Definitions
+
+Scan
+----
+    A numpy array containing one type of LiDAR data (a scan type: range, range2, intensity, etc.) with shape equal to the 
+    shape passed to Scan() upon initialization.
+    
+    <dtype> can be any size float or uint as appropriate for the scan type.
+
+I Scan
+------
+    An intra-coded scan. The compressed frame does not depend on any other frames in order to be decoded.
+
+P Scan
+------
+    Am inter-coded scan. The compressed frame depends on the decoded previous frame in order to be decoded.
+
+Frame
+-----
+    list(range scan, range2 scan, intensity scan, ... )
+
+Group
+-----
+    A logical grouping of compressed frames, where all scans within thee first frame of the group are compressed 
+    as intra-coded (I) scans. 
+   
+    A group can be of size 1, which forces all scans to be encoded as I scans.
+    
+    
 ## Examples
 
 Look at test.py for an example of how to compress and decompress a LiDAR sequence to a file or byte string.
