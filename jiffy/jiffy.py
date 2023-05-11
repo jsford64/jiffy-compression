@@ -5,6 +5,7 @@ import pyfastpfor as p4
 import zstandard as zstd
 from io import BytesIO,BufferedRandom, BufferedReader, BufferedWriter
 from os import path
+import sys
 
 '''
     Copyright 2023 Jeff S. Ford and Jordan S. Ford
@@ -184,6 +185,8 @@ class CodecState:
     # Dynamically keep track of min size uint required for dynRangeBits
     # through the codec stages
     pipeDtype:np.dtype = np.dtype(np.uint32)
+    # Record the original dtype of the scan data
+    origDtype:np.dtype = np.dtype(np.uint32)
     # keeps track of dynamic range through the codec stages
     dynRangeBits:np.uint8 = 0
     bitmask:np.array = field(default=None, init=False)
@@ -537,23 +540,27 @@ class Bytes2FollowHeader:
     '''
     byteStream:ByteStream
 
-    def encode(self, dynRangeBits, length):
-
-        hdr = (dynRangeBits & 0x1f)<<27 | length & ((1<<27)-1)
-        return self.byteStream.writeField( np.uint32(hdr) )
-
+    def encode(self, origDtype, dynRangeBits, length):
+        print(f'        origDtype: {origDtype}', f'dynRangeBits: {dynRangeBits}', f'length: {length}')
+        nBytes =  self.byteStream.writeField( np.frombuffer(origDtype.char.encode(), dtype=np.uint8) )
+        hdr = (dynRangeBits & 0x1f)<<27 | length & 0x7ffffff
+        nBytes += self.byteStream.writeField( np.uint32(hdr) )
+ 
+        return nBytes
 
     def decode(self):
+        origDtype = np.dtype(self.byteStream.read(1))
         hdr = np.frombuffer( self.byteStream.read(4),dtype=np.uint32 )[0]
         dynRangeBits = (hdr>>27) & 0x1f
         length = hdr & 0x7ffffff
-        return dynRangeBits, length
+        print(f'        origDtype: {origDtype}', f'dynRangeBits: {dynRangeBits}', f'length: {length}')
+        return origDtype, dynRangeBits, length
 
 
 @dataclass
 class Bytes2Follow:
     '''
-    Encode: Write a 'bytes to follow' beader uint32' and the bytesIn buffer to byteStream.
+    Encode: Write a 'bytes to follow' header and the bytesIn buffer to byteStream.
             Returns: total number of bytes written to byteStream.
 
     Decode: Extract the dynamic range (# of significant bits of decoded buffer),
@@ -563,10 +570,10 @@ class Bytes2Follow:
     '''
     codecState:CodecState
     byteStream:ByteStream
+    decodeDtype:np.dtype = None
 
     # Is this compressed buffer a bitmask?
     isBitMask:bool = False
-    decodeDtype:np.dtype = None
 
     # not included in class instantiation parameters
     header:Bytes2FollowHeader = field(default=None, init=False)
@@ -575,25 +582,28 @@ class Bytes2Follow:
         self.header = Bytes2FollowHeader(self.byteStream)
 
     def encode(self,bytesIn):
+        print(f'    Bytes2Follow.encode() @ {self.byteStream.tell()}')
         if self.isBitMask:
-            nBytes = self.header.encode(0, len(bytesIn))
+            nBytes = self.header.encode(np.bool_().dtype, 0, len(bytesIn))
         else:
-            nBytes = self.header.encode(self.codecState.dynRangeBits,
+            nBytes = self.header.encode(self.codecState.origDtype,
+                                        self.codecState.dynRangeBits,
                                         len(bytesIn))
         nBytes += self.byteStream.write(bytesIn)
         return  nBytes # bytes written
 
     def decode(self):
-        dynRangeBits, length = self.header.decode()
-
+        print(f'    Bytes2Follow.decode() @ {self.byteStream.tell()}')
+        origDtype, dynRangeBits, length = self.header.decode()
         if not self.isBitMask:
+            self.codecState.origDtype = origDtype
             self.codecState.setDynRange(dynRangeBits)
 
         buff = self.byteStream.read(length)
         if self.decodeDtype is None:
             return buff
         else:
-            return np.frombuffer(buff,dtype=self.decodeDtype)
+           return np.frombuffer(buff,dtype=self.decodeDtype)
 
 
 @dataclass
@@ -829,7 +839,7 @@ class Scan:
                             [ Delta(self.codecState),
                               Zigzag(self.codecState),
                               P4(self.codecState),
-                              Bytes2Follow(self.codecState, self.byteStream) ]
+                              Bytes2Follow(self.codecState, self.byteStream, decodeDtype=np.uint32) ]
                           )
 
     @property
@@ -866,14 +876,15 @@ class Scan:
 
         # First, save the current byteStream offset
         scanOffset = self.byteStream.tell()
-        self.byteStream.writeField(np.uint32(0))
+        print(f'scan @ {scanOffset}')
+        nBytes = self.byteStream.writeField(np.uint32(0))
 
         # encode the scan, write the compressed bitmask first, then the compressed scan
         residualScan, residualBitmask = self.pipe0.encode(arr)
-        nBytes = self.bitmaskPipe.encode(residualBitmask)
+        nBytes += self.bitmaskPipe.encode(residualBitmask)
         nBytes += self.pipe1.encode(residualScan)
         self.nBytes = np.uint32(nBytes)
-
+    
         # Update the scan length in the byteStream
 
         if mode:
@@ -881,7 +892,7 @@ class Scan:
             nBytes = -nBytes
 
         self.byteStream.updateField(np.uint32(nBytes), scanOffset)
-
+        print(f'ending position @ {self.byteStream.tell()}')
         return self.nBytes
     
 
@@ -889,8 +900,10 @@ class Scan:
         '''
         Decode each scan from the byteStream.
         '''
+        print(f'scan @ {self.byteStream.tell()}')
         # Read the scan length from the byteStream
-        nBytes = self.byteStream.readField(dtype=np.uint32)
+        nBytes = self.byteStream.readField(dtype=np.int32)
+
         if nBytes < 0:
             self.codecState.iScan = True
             nBytes = -nBytes
@@ -901,7 +914,9 @@ class Scan:
         self.nBytes = nBytes
         residualBitmask = self.bitmaskPipe.decode()
         residualScan = self.pipe1.decode()
-        return self.pipe0.decode(residualBitmask,residualScan)
+        buff = self.pipe0.decode(residualBitmask,residualScan)
+        print(f'ending position @ {self.byteStream.tell()}')
+        return buff
 
 
 @dataclass
@@ -1166,7 +1181,7 @@ class Stream:
                 '''
 
         # make frame a list if it's not already
-        if  not isinstance(frame, list):
+        if  not isinstance(frame, (list,tuple)):
             frame = [frame]
         
         # check that frame is a list of 2D numpy arrays
@@ -1200,7 +1215,7 @@ class Stream:
         if self.frameCount != 0:
             # this is not the first frame in the stream or group
             mode = ADAPTIVE
-
+        
         # encode each scan in the frame and write it to the byteStream
         self.frameBytes = [codec.encode(scan, mode) for codec,scan in zip(self._scanCodecs, frame)]
         self.frameModes = [codec.isIscan for codec in self._scanCodecs]
@@ -1222,20 +1237,20 @@ class Stream:
         '''
         # Read the header if this is the first frame and readHeader has not been called.
         if self.header:
-            print(self.readHeader())
+            self.readHeader()
 
         if len(self._scanCodecs) == 0:
             # first frame, initialize the stream
             # This has to be done on the first call, because the
             # header must be read before the relevant parameters are known.
-            self._scanCodecs = [Scan(self.shape, self.byteStream,p) for p in self.framePrecisions]
-        
+            self._scanCodecs = [Scan(self.shape, self.byteStream, p) for p in self.framePrecisions]
+
         # Read a frame of encoded scans from the byteStream
         while not self.byteStream.eof():
-            # decode the scans
-            frame = [codec.decode() for codec in self._scanCodecs]
-            self.frameModes = [codec.isIscan for codec in self._scanCodecs]
-            self.frameBytes = [codec.nBytes for codec in self._scanCodecs]
+            # decode the scans in a frame
+            frame = [scan.decode() for scan in self._scanCodecs]  # <<<<<<<  This is where the error occurs
+            self.frameModes = [scan.isIscan for scan in self._scanCodecs]
+            self.frameBytes = [scan.nBytes for scan in self._scanCodecs]
 
             self.frameCount += 1
             if self.frameCount == self.framesPerGroup:

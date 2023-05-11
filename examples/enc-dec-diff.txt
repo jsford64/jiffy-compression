@@ -1,0 +1,20 @@
+scan @ 26								scan @ 26
+    Bytes2Follow.encode() @ 30					|           Bytes2Follow.decode() @ 30
+        origDtype: bool dynRangeBits: 0 length: 5022			        origDtype: bool dynRangeBits: 0 length: 5022
+    Bytes2Follow.encode() @ 5057				|           Bytes2Follow.decode() @ 5057
+        origDtype: float32 dynRangeBits: 17 length: 85192		        origDtype: float32 dynRangeBits: 17 length: 85192
+ending position @ 90254							ending position @ 90254
+scan @ 90254							|       scan @ 98330
+    Bytes2Follow.encode() @ 90258				|           Bytes2Follow.decode() @ 98334
+        origDtype: bool dynRangeBits: 0 length: 2916		|               origDtype: bool dynRangeBits: 20 length: 933503
+    Bytes2Follow.encode() @ 93179				<       
+        origDtype: float32 dynRangeBits: 17 length: 6732	<       
+ending position @ 99916						<       
+scan @ 99916							<       
+    Bytes2Follow.encode() @ 99920				<       
+        origDtype: bool dynRangeBits: 0 length: 19		<       
+    Bytes2Follow.encode() @ 99944				<       
+        origDtype: uint16 dynRangeBits: 15 length: 115280       <       
+ending position @ 215229					<       
+scan @ 215229							<       
+    Bytes2Follow.encode() @ 215233				<       

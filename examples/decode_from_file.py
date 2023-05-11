@@ -27,19 +27,19 @@ def decode_from_file(jiffy_file):
         stream = jf.Stream(byteStream=f)
 
         header = stream.readHeader()
-        print("Header")
-        print("--------------------------------------")
-        print(f"  magic:          {header['magic']}")
-        print(f"  version:        {header['version']//256}.{header['version']%256}")
-        print(f"  shape:          {header['shape']}")
-        print(f"  scansPerFrame:  {header['scansPerFrame']}")
-        print(f"  framesPerGroup: {header['framesPerGroup']}")
-        print(f"  scanPrecisions: {header['framePrecisions']}")
+        # print("Header")
+        # print("--------------------------------------")
+        # print(f"  magic:          {header['magic']}")
+        # print(f"  version:        {header['version']//256}.{header['version']%256}")
+        # print(f"  shape:          {header['shape']}")
+        # print(f"  scansPerFrame:  {header['scansPerFrame']}")
+        # print(f"  framesPerGroup: {header['framesPerGroup']}")
+        # print(f"  scanPrecisions: {header['framePrecisions']}")
 
         for frame in stream.decode():
             print(len(frame))
             for scan in frame:
-                plt.imshow(s)
+                plt.imshow(scan)
                 plt.show()
         stream.close()
 
