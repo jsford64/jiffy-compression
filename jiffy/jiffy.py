@@ -1248,7 +1248,10 @@ class Stream:
         # Read a frame of encoded scans from the byteStream
         while not self.byteStream.eof():
             # decode the scans in a frame
-            frame = [scan.decode() for scan in self._scanCodecs]  # <<<<<<<  This is where the error occurs
+            frame = [scan.decode() for scan in self._scanCodecs]    # <<<<<<<  This is where the error occurs
+                                                                    # first frame is decoded correctly, but
+                                                                    # bytes get lost between scan.decode() calls
+                                                                    # on the next frame.
             self.frameModes = [scan.isIscan for scan in self._scanCodecs]
             self.frameBytes = [scan.nBytes for scan in self._scanCodecs]
 
