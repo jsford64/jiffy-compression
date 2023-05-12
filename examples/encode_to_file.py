@@ -25,14 +25,16 @@ def get_frames(dataset_path, count=-1):
 def encode_to_file(fname, dataset_path):
 
     scans_per_frame = 1               # Frames contain first- and second-return range, signal, and reflectivity plus ambient infrared.
-    precision = [4, 1, 1, 1, 1, 1, 1] # Use 5 millimeter precision for ranges. Don't quantize anything else.
+    precision = [1000, 1, 1, 1, 1, 1, 1] # Use 5 millimeter precision for ranges. Don't quantize anything else.
     frames_per_group = 1              # Force a keyframe every 10 frames.
 
     # Open the jiffy encoding stream.    
-    stream = jf.Stream(scans_per_frame, frames_per_group, byteStream=fname, precision=precision)
+    stream = jf.StreamWriter(fname, scans_per_frame, frames_per_group, precision=precision)
 
     original_size_bytes = 0
-    for frame in get_frames(dataset_path):
+    for fnum, frame in enumerate(get_frames(dataset_path)):
+        if fnum > 0:
+            break
         # Encode the latest frame.
         stream.encode(frame[:scans_per_frame])
 

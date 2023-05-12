@@ -23,35 +23,34 @@ def get_frames(dataset_path, count=-1):
     return zip(range_scans, range2_scans, signal_scans, signal2_scans, reflect_scans, reflect2_scans, nearir_scans)
 
 def decode_from_file(jiffy_file):
-    with open(jiffy_file, 'rb+') as f:
-        stream = jf.Stream(byteStream=f)
+    stream = jf.StreamReader(byteStream=jiffy_file)
 
-        header = stream.readHeader()
-        print("Header")
-        print("--------------------------------------")
-        print(f"  magic:          {header['magic']}")
-        print(f"  version:        {header['version']//256}.{header['version']%256}")
-        print(f"  shape:          {header['shape']}")
-        print(f"  scansPerFrame:  {header['scansPerFrame']}")
-        print(f"  framesPerGroup: {header['framesPerGroup']}")
-        print(f"  scanPrecisions: {header['framePrecisions']}")
+    header = stream.readHeader()
+    print("Header")
+    print("--------------------------------------")
+    print(f"  magic:          {header['magic']}")
+    print(f"  version:        {header['version']//256}.{header['version']%256}")
+    print(f"  shape:          {header['shape']}")
+    print(f"  scansPerFrame:  {header['scansPerFrame']}")
+    print(f"  framesPerGroup: {header['framesPerGroup']}")
+    print(f"  scanPrecisions: {header['framePrecisions']}")
 
-        orig_frames = get_frames('../data/os0-128.npz')
+    orig_frames = get_frames('../data/os0-128.npz')
 
-        frame_num = 0
-        for orig_frame, frame in zip(orig_frames, stream.decode()):
-            print(f"Frame: {frame_num}")
-            for scan_num, scan in enumerate(frame):
-                plt.subplot(len(frame), 1, scan_num+1)
-                print(scan_num, scan.dtype)
+    frame_num = 0
+    for orig_frame, frame in zip(orig_frames, stream.decode()):
+        print(f"Frame: {frame_num}")
+        for scan_num, scan in enumerate(frame):
+            plt.subplot(len(frame), 1, scan_num+1)
+            print(scan_num, scan.dtype)
 
-                ogscan = orig_frame[scan_num]
-                errscan = np.abs(scan-ogscan)
-                print(f'  Scan [{scan_num}]: Max Error: {np.max(errscan)}')
-                plt.imshow(scan)
-            plt.show()
-            frame_num += 1
-        stream.close()
+            ogscan = orig_frame[scan_num]
+            errscan = np.abs(scan-ogscan)
+            print(f'  Scan [{scan_num}]: Max Error: {np.max(errscan)}')
+            plt.imshow(scan)
+        plt.show()
+        frame_num += 1
+    stream.close()
 
 
 if __name__=='__main__':

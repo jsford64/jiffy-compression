@@ -53,22 +53,20 @@ nGroups = 2
 fname = "test.jiffy"
 
 # Create a new stream for encoding, must be opened in binary r/w mode ('wb+')
-with open(fname, 'wb+') as f:
+stream = jf.StreamWriter(fname, scansPerFrame, framesPerGroup, precision=precision)
 
-    stream = jf.Stream(scansPerFrame, framesPerGroup, byteStream=f, precision=precision)
+origFrames = []
+encodedModes = []
 
-    origFrames = []
-    encodedModes = []
-
-    # do a short encode
-    for g in range(nGroups):
-        for f in range(framesPerGroup):
-            # Create a fake frame and save it for later comparison
-            frame = [fake_scan(shape, precision=precision, dtype=d) for d in frameDtypes]
-            origFrames.append(frame)
-            # Encode the frame
-            stream.encode(frame)
-            encodedModes.append(stream.frameModes)
+# do a short encode
+for g in range(nGroups):
+    for f in range(framesPerGroup):
+        # Create a fake frame and save it for later comparison
+        frame = [fake_scan(shape, precision=precision, dtype=d) for d in frameDtypes]
+        origFrames.append(frame)
+        # Encode the frame
+        stream.encode(frame)
+        encodedModes.append(stream.frameModes)
 
 # Close the stream
 stream.close()
@@ -79,33 +77,32 @@ stream.close()
 # or you can rewind the encoded stream to the
 # beginning with stream.rewind().
 
-with open(fname, 'rb+') as f:
-    stream = jf.Stream(byteStream=f)
+stream = jf.StreamReader(fname)
 
-    # Read the header- this is optional, decode() will do it for you if you don't,
-    # but we are checking the header fields here.
-    hdr = stream.readHeader()
+# Read the header- this is optional, decode() will do it for you if you don't,
+# but we are checking the header fields here.
+hdr = stream.readHeader()
 
-    # check the header
-    assert hdr['magic'] == jf.MAGIC
-    assert hdr['version'] == jf.VERSION
-    assert hdr['shape'] == shape
-    assert hdr['scansPerFrame'] == scansPerFrame
-    assert hdr['framesPerGroup'] == framesPerGroup
-    assert hdr['framePrecisions'].all() == precision
+# check the header
+assert hdr['magic'] == jf.MAGIC
+assert hdr['version'] == jf.VERSION
+assert hdr['shape'] == shape
+assert hdr['scansPerFrame'] == scansPerFrame
+assert hdr['framesPerGroup'] == framesPerGroup
+assert hdr['framePrecisions'].all() == precision
 
-    # make a frameAllClose() lambda for comparing decoded frames to the originals
-    frameAllClose = lambda x,y : all([np.allclose(a,b) for a,b in zip(x,y)])
-    # make a generic match lambda for comparing decoded frame modes and dtypes match the originals
-    match = lambda x,y : all([a==b for a,b in zip(x,y)])
+# make a frameAllClose() lambda for comparing decoded frames to the originals
+frameAllClose = lambda x,y : all([np.allclose(a,b) for a,b in zip(x,y)])
+# make a generic match lambda for comparing decoded frame modes and dtypes match the originals
+match = lambda x,y : all([a==b for a,b in zip(x,y)])
 
-    # do a short decode
-    for frame,ogFrame in zip(stream.decode(), origFrames):
-        # ensure the frame is the same as the original
-        assert frameAllClose(frame, ogFrame)
-        # ensure the frame modes are the same as the original
-        assert match(stream.frameModes, encodedModes.pop(0))
-        # ensure the frame dtypes are the same as the original
-        assert match(stream.frameDtypes, frameDtypes)
+# do a short decode
+for frame,ogFrame in zip(stream.decode(), origFrames):
+    # ensure the frame is the same as the original
+    assert frameAllClose(frame, ogFrame)
+    # ensure the frame modes are the same as the original
+    assert match(stream.frameModes, encodedModes.pop(0))
+    # ensure the frame dtypes are the same as the original
+    assert match(stream.frameDtypes, frameDtypes)
 
 print('Success!')

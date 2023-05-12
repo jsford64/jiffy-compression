@@ -3,6 +3,7 @@ from dataclasses import dataclass,field
 from collections import OrderedDict
 import pyfastpfor as p4
 import zstandard as zstd
+import os
 from io import BytesIO,BufferedRandom, BufferedReader, BufferedWriter
 from os import path
 import sys
@@ -23,7 +24,9 @@ import sys
    limitations under the License.
 '''
 
-VERSION = np.uint16(1.0 * 256)
+VERSION_MAJOR = 0
+VERSION_MINOR = 2
+VERSION = np.uint16(VERSION_MAJOR * 256 + VERSION_MINOR)
 MAGIC = b'JFFY'
 
 ############################### ByteStream Class ###############################
@@ -323,6 +326,8 @@ class Quantize(NumpyCodec):
         scale = 1.0/self.codecState.precision
         dynRangeBits = np.ceil(np.log2(max * scale)).astype(np.uint8)
         self.codecState.setDynRange( dynRangeBits )
+
+        print(f"{dynRangeBits} {self.codecState.pipeDtype}")
 
         return (arr * scale).round(0).astype(self.codecState.pipeDtype)
 
@@ -949,17 +954,7 @@ class Stream:
             potentially aid in error recovery when decoding in future versions.
 
         byteStream:
-            A previously encoded ByteStream object containing a compressed stream,
-            a byte string (b''), a file name, or an open file.
-            
-            On encode, Stream will append encoded data to any data already in byteStream,
-            except in the case where byteStream is a filename to open. If byteStream is a
-            filename, it will be opened in wb+ mode, and any existing data will be lost.
-            If an open file is used, it must be opened in rb+ or wb+ modes. 
-            
-            On decode, Stream will extract encoded data from byteStream, producing 
-            decoded frames.
-            byteStream defaults to using an empty bytes object (b'').
+            A previously encoded ByteStream object containing a compressed stream.
 
         precision:  
             A scalar precision value to apply to all scan types, or a list of 
@@ -1084,7 +1079,7 @@ class Stream:
         self.scansPerFrame = np.uint8(self.scansPerFrame)
         self.framesPerGroup = np.uint32(self.framesPerGroup)
         
-        self.byteStream = ByteStream(self.byteStream)
+        #self.byteStream = ByteStream(self.byteStream)
 
         # make precision a list if it is not already
         if  not isinstance(self.precision, list):
@@ -1266,3 +1261,55 @@ class Stream:
         self.frameCount = 0
         self._encodedScans = []
 
+class StreamReader(Stream):
+    '''
+        StreamReader( byteStream:ByteStream, *args, **kwargs )
+
+        Jiffy StreamReader class. Decompresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
+        
+        StreamReader() constructor arguments:
+        -------------------------------
+        byteStream:
+            A previously encoded ByteStream object containing a compressed stream,
+            a byte string (b''), a file name, or a file opened in mode 'rb+'.
+            
+            On decode, Stream will extract encoded data from byteStream, producing 
+            decoded frames.
+        *args:
+            Remaining arguments are passed to the Stream constructor.
+        **kwargs:
+            Remaining keyword arguments are passed to the Stream constructor.
+    '''
+    def __init__(self, byteStream, *args, **kwargs):
+        if isinstance(byteStream, str): 
+            byteStream = ByteStream(byteStream)
+        super().__init__(byteStream=byteStream, *args, **kwargs)
+
+class StreamWriter(Stream):
+    '''
+        StreamWriter( byteStream:ByteStream, *args, **kwargs )
+
+        Jiffy StreamWriter class. Compresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
+        
+        StreamWriter() constructor arguments:
+        -------------------------------
+        byteStream:
+            A byte string (b''), a file name, or a file opened in mode 'wb+'.
+            
+            StreamWriter will append encoded data to any data already in byteStream,
+            except in the case where byteStream is a filename to open. If byteStream is a
+            filename, it will be opened in wb+ mode, and any existing data will be lost.
+            If an open file is used, it must be opened in wb+ mode. 
+            
+            byteStream defaults to using an empty bytes object (b'').
+        *args:
+            Remaining arguments are passed to the Stream constructor.
+        **kwargs:
+            Remaining keyword arguments are passed to the Stream constructor.
+    '''
+    def __init__(self, byteStream, *args, **kwargs):
+        if isinstance(byteStream, str): 
+            if os.path.exists(byteStream):
+                os.remove(byteStream)
+            byteStream = ByteStream(byteStream)
+        super().__init__(byteStream=byteStream, *args, **kwargs)
