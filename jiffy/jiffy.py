@@ -199,7 +199,13 @@ class CodecState:
     def setDynRange(self,bits):
         # update the current dynamic range and set the dtype to the min required uint
         self.dynRangeBits = bits
-        self.pipeDtype = np.result_type(np.int8,self.dynRangeMask)
+
+        if bits < 8:
+            self.pipeDtype = np.int8
+        elif bits < 16:
+            self.pipeDtype = np.int16
+        elif bits < 32:
+            self.pipeDtype = np.int32
 
 
 ############################### NumpyCodec Classes ###############################
@@ -311,27 +317,14 @@ class Quantize(NumpyCodec):
         # determine the dynamic range of this scan
         self.codecState.origDtype = arr.dtype
         max = arr.max()
-        dynRangeBits = np.ceil(np.log2(max)).astype(np.uint8)
-        self.codecState.setDynRange( dynRangeBits )
-
-        # If float or signed int in, convert to unsigned int
-        if not isinstance(arr.dtype.type(), np.unsignedinteger) :
-            a = arr.astype(self.codecState.pipeDtype)
-        else:
-            # No conversion necessary, already a uint dtype
-            a = arr
-
-        precision = self.codecState.precision
-
-        if precision == 1:
-            # round to the nearest integer and keep the incoming pipeDtype
-            return a.round().astype(a.dtype)
 
         # Determine dynamic range of output, quantize to precision, round, and
         # convert to the smallest uint dtype that will accomodate the quantized dynamic range
-        scale = 1.0/precision
-        self.codecState.setDynRange( np.ceil(np.log2(max * scale)).astype(np.uint8) )
-        return (a * scale).round(0).astype(self.codecState.pipeDtype)
+        scale = 1.0/self.codecState.precision
+        dynRangeBits = np.ceil(np.log2(max * scale)).astype(np.uint8)
+        self.codecState.setDynRange( dynRangeBits )
+
+        return (arr * scale).round(0).astype(self.codecState.pipeDtype)
 
     def decode(self,arr):
         # Reverse the encode() process above.
@@ -541,7 +534,6 @@ class Bytes2FollowHeader:
     byteStream:ByteStream
 
     def encode(self, origDtype, dynRangeBits, length):
-        print(f'        origDtype: {origDtype}', f'dynRangeBits: {dynRangeBits}', f'length: {length}')
         nBytes =  self.byteStream.writeField( np.frombuffer(origDtype.char.encode(), dtype=np.uint8) )
         hdr = (dynRangeBits & 0x1f)<<27 | length & 0x7ffffff
         nBytes += self.byteStream.writeField( np.uint32(hdr) )
@@ -553,7 +545,6 @@ class Bytes2FollowHeader:
         hdr = np.frombuffer( self.byteStream.read(4),dtype=np.uint32 )[0]
         dynRangeBits = (hdr>>27) & 0x1f
         length = hdr & 0x7ffffff
-        print(f'        origDtype: {origDtype}', f'dynRangeBits: {dynRangeBits}', f'length: {length}')
         return origDtype, dynRangeBits, length
 
 
@@ -582,7 +573,6 @@ class Bytes2Follow:
         self.header = Bytes2FollowHeader(self.byteStream)
 
     def encode(self,bytesIn):
-        print(f'    Bytes2Follow.encode() @ {self.byteStream.tell()}')
         if self.isBitMask:
             nBytes = self.header.encode(np.bool_().dtype, 0, len(bytesIn))
         else:
@@ -593,7 +583,6 @@ class Bytes2Follow:
         return  nBytes # bytes written
 
     def decode(self):
-        print(f'    Bytes2Follow.decode() @ {self.byteStream.tell()}')
         origDtype, dynRangeBits, length = self.header.decode()
         if not self.isBitMask:
             self.codecState.origDtype = origDtype
@@ -799,7 +788,6 @@ class Scan:
     def __post_init__(self):
 
         self.codecState = CodecState(self.shape,self.precision)
-        self.byteStream = ByteStream(self.byteStream)
         self.nBytes = 0     # number of bytes written to byteStream
 
         # On Scan.encode():
@@ -876,7 +864,6 @@ class Scan:
 
         # First, save the current byteStream offset
         scanOffset = self.byteStream.tell()
-        print(f'scan @ {scanOffset}')
         nBytes = self.byteStream.writeField(np.uint32(0))
 
         # encode the scan, write the compressed bitmask first, then the compressed scan
@@ -892,15 +879,13 @@ class Scan:
             nBytes = -nBytes
 
         self.byteStream.updateField(np.uint32(nBytes), scanOffset)
-        print(f'ending position @ {self.byteStream.tell()}')
-        return self.nBytes
+        return self.nBytes, self.byteStream
     
 
     def decode(self):
         '''
         Decode each scan from the byteStream.
         '''
-        print(f'scan @ {self.byteStream.tell()}')
         # Read the scan length from the byteStream
         nBytes = self.byteStream.readField(dtype=np.int32)
 
@@ -915,7 +900,6 @@ class Scan:
         residualBitmask = self.bitmaskPipe.decode()
         residualScan = self.pipe1.decode()
         buff = self.pipe0.decode(residualBitmask,residualScan)
-        print(f'ending position @ {self.byteStream.tell()}')
         return buff
 
 
@@ -1248,10 +1232,7 @@ class Stream:
         # Read a frame of encoded scans from the byteStream
         while not self.byteStream.eof():
             # decode the scans in a frame
-            frame = [scan.decode() for scan in self._scanCodecs]    # <<<<<<<  This is where the error occurs
-                                                                    # first frame is decoded correctly, but
-                                                                    # bytes get lost between scan.decode() calls
-                                                                    # on the next frame.
+            frame = [scan.decode() for scan in self._scanCodecs]
             self.frameModes = [scan.isIscan for scan in self._scanCodecs]
             self.frameBytes = [scan.nBytes for scan in self._scanCodecs]
 

@@ -27,20 +27,30 @@ def decode_from_file(jiffy_file):
         stream = jf.Stream(byteStream=f)
 
         header = stream.readHeader()
-        # print("Header")
-        # print("--------------------------------------")
-        # print(f"  magic:          {header['magic']}")
-        # print(f"  version:        {header['version']//256}.{header['version']%256}")
-        # print(f"  shape:          {header['shape']}")
-        # print(f"  scansPerFrame:  {header['scansPerFrame']}")
-        # print(f"  framesPerGroup: {header['framesPerGroup']}")
-        # print(f"  scanPrecisions: {header['framePrecisions']}")
+        print("Header")
+        print("--------------------------------------")
+        print(f"  magic:          {header['magic']}")
+        print(f"  version:        {header['version']//256}.{header['version']%256}")
+        print(f"  shape:          {header['shape']}")
+        print(f"  scansPerFrame:  {header['scansPerFrame']}")
+        print(f"  framesPerGroup: {header['framesPerGroup']}")
+        print(f"  scanPrecisions: {header['framePrecisions']}")
 
-        for frame in stream.decode():
-            print(len(frame))
-            for scan in frame:
+        orig_frames = get_frames('../data/os0-128.npz')
+
+        frame_num = 0
+        for orig_frame, frame in zip(orig_frames, stream.decode()):
+            print(f"Frame: {frame_num}")
+            for scan_num, scan in enumerate(frame):
+                plt.subplot(len(frame), 1, scan_num+1)
+                print(scan_num, scan.dtype)
+
+                ogscan = orig_frame[scan_num]
+                errscan = np.abs(scan-ogscan)
+                print(f'  Scan [{scan_num}]: Max Error: {np.max(errscan)}')
                 plt.imshow(scan)
-                plt.show()
+            plt.show()
+            frame_num += 1
         stream.close()
 
 

@@ -24,8 +24,8 @@ def get_frames(dataset_path, count=-1):
 
 def encode_to_file(fname, dataset_path):
 
-    scans_per_frame = 7               # Frames contain first- and second-return range, signal, and reflectivity plus ambient infrared.
-    precision = [5, 5, 1, 1, 1, 1, 1] # Use 5 millimeter precision for ranges. Don't quantize anything else.
+    scans_per_frame = 1               # Frames contain first- and second-return range, signal, and reflectivity plus ambient infrared.
+    precision = [4, 1, 1, 1, 1, 1, 1] # Use 5 millimeter precision for ranges. Don't quantize anything else.
     frames_per_group = 1              # Force a keyframe every 10 frames.
 
     # Open the jiffy encoding stream.    
@@ -34,10 +34,10 @@ def encode_to_file(fname, dataset_path):
     original_size_bytes = 0
     for frame in get_frames(dataset_path):
         # Encode the latest frame.
-        stream.encode(frame)
+        stream.encode(frame[:scans_per_frame])
 
         # Add the raw data size of this frame in bytes to the total.
-        for scan in frame:
+        for scan in frame[:scans_per_frame]:
             original_size_bytes += scan.size * scan.itemsize
 
     # Count the encoded stream size in bytes.
