@@ -203,6 +203,11 @@ class CodecState:
         # update the current dynamic range and set the dtype to the min required uint
         self.dynRangeBits = bits
 
+        # NOTE(JORDAN): We probably want to figure this out and use smaller types when we can!
+        self.pipeDtype = np.int32
+        return
+
+        # Here's the thing to figure out...
         if bits < 8:
             self.pipeDtype = np.int8
         elif bits < 16:
@@ -326,8 +331,6 @@ class Quantize(NumpyCodec):
         scale = 1.0/self.codecState.precision
         dynRangeBits = np.ceil(np.log2(max * scale)).astype(np.uint8)
         self.codecState.setDynRange( dynRangeBits )
-
-        print(f"{dynRangeBits} {self.codecState.pipeDtype}")
 
         return (arr * scale).round(0).astype(self.codecState.pipeDtype)
 
@@ -989,7 +992,7 @@ class Stream:
             The byteStream object used to encode/decode the stream.
 
         framePrecisions:
-            A list of np.uint8 precision values used to encode/decode the stream, one for each
+            A list of np.uint16 precision values used to encode/decode the stream, one for each
             scan type.
 
         scansPerFrame:
@@ -1052,12 +1055,12 @@ class Stream:
                                                             2 or more:  first frame in group is an I scan, 
                                                                         all others in the group are adaptive
 
-                framePrecisions uint8,      scansPerFrame   list of precision values, one for each scan type
+                framePrecisions uint16,     scansPerFrame   list of precision values, one for each scan type
         '''
     scansPerFrame:np.uint8 = 1
     framesPerGroup:int = 10
     byteStream:ByteStream = b''
-    precision:np.uint8 = 1
+    precision:np.uint16 = 1
     header:bool = True
 
     frameModes:list[bool] = field(init=False)
@@ -1078,8 +1081,6 @@ class Stream:
         
         self.scansPerFrame = np.uint8(self.scansPerFrame)
         self.framesPerGroup = np.uint32(self.framesPerGroup)
-        
-        #self.byteStream = ByteStream(self.byteStream)
 
         # make precision a list if it is not already
         if  not isinstance(self.precision, list):
@@ -1088,6 +1089,9 @@ class Stream:
             self.framePrecisions = self.precision
 
         del self.precision
+
+        assert all([p < np.iinfo(np.uint16).max for p in self.framePrecisions])
+        
 
         self.frameCount = 0
         self._scanCodecs = []
@@ -1105,7 +1109,7 @@ class Stream:
         self.byteStream.writeField(np.uint32(self.shape[1]))
         self.byteStream.writeField(np.uint8(self.scansPerFrame))
         self.byteStream.writeField(np.uint32(self.framesPerGroup))
-        self.byteStream.write(np.array(self.framePrecisions, dtype=np.uint8).tobytes())
+        self.byteStream.write(np.array(self.framePrecisions, dtype=np.uint16).tobytes())
         self.rewind()
         self.readHeader()
 
@@ -1120,7 +1124,7 @@ class Stream:
         self.shape = (self.byteStream.readField(dtype=np.uint32), self.byteStream.readField(dtype=np.uint32))
         self.scansPerFrame = self.byteStream.readField(dtype=np.uint8)
         self.framesPerGroup = self.byteStream.readField(dtype=np.uint32)
-        self.framePrecisions = np.frombuffer(self.byteStream.read(self.scansPerFrame), dtype=np.uint8)
+        self.framePrecisions = np.frombuffer(self.byteStream.read(np.uint16().itemsize*self.scansPerFrame), dtype=np.uint16)
         self.header = False
 
         return self.stats()
