@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 '''
 
 def fake_scan(shape, precision=1, out_of_range_percent=0.2, dtype=np.float32):
-    scan = np.zeros(shape, dtype=np.float32)
+    scan = np.zeros(shape, dtype=dtype)
     h,w = shape
     scan[:,0] = 0.1
     for j in range(1, w):
@@ -44,7 +44,7 @@ def fake_scan(shape, precision=1, out_of_range_percent=0.2, dtype=np.float32):
 
 
 shape = (128,1024)
-precision = 1 # mm; or a list of integer precisions, one per scantype
+precision = 2 # mm; or a list of integer precisions, one per scantype
 
 framesPerGroup = 2
 frameDtypes = [np.float32, np.int32, np.uint16, np.uint8]
@@ -77,11 +77,11 @@ stream.close()
 # or you can rewind the encoded stream to the
 # beginning with stream.rewind().
 
-stream = jf.StreamReader(fname)
+stream_rdr = jf.StreamReader(fname)
 
 # Read the header- this is optional, decode() will do it for you if you don't,
 # but we are checking the header fields here.
-hdr = stream.readHeader()
+hdr = stream_rdr.readHeader()
 
 # check the header
 assert hdr['magic'] == jf.MAGIC
@@ -89,20 +89,23 @@ assert hdr['version'] == jf.VERSION
 assert hdr['shape'] == shape
 assert hdr['scansPerFrame'] == scansPerFrame
 assert hdr['framesPerGroup'] == framesPerGroup
-assert hdr['framePrecisions'].all() == precision
+
+for hdr_prec in hdr['framePrecisions']:
+    assert hdr_prec == precision
 
 # make a frameAllClose() lambda for comparing decoded frames to the originals
-frameAllClose = lambda x,y : all([np.allclose(a,b) for a,b in zip(x,y)])
+frameAllClose = lambda x,y,eps : all([np.allclose(a,b, atol=eps) for a,b in zip(x,y)])
 # make a generic match lambda for comparing decoded frame modes and dtypes match the originals
 match = lambda x,y : all([a==b for a,b in zip(x,y)])
 
 # do a short decode
-for frame,ogFrame in zip(stream.decode(), origFrames):
+for frame, ogFrame in zip(stream_rdr.decode(), origFrames):
     # ensure the frame is the same as the original
-    assert frameAllClose(frame, ogFrame)
+    assert frameAllClose(frame, ogFrame, precision/2.0)
     # ensure the frame modes are the same as the original
-    assert match(stream.frameModes, encodedModes.pop(0))
+    assert match(stream_rdr.frameModes, encodedModes.pop(0))
     # ensure the frame dtypes are the same as the original
-    assert match(stream.frameDtypes, frameDtypes)
+    for s, scan in enumerate(frame):
+        assert np.issubdtype(scan.dtype, frameDtypes[s])
 
 print('Success!')
