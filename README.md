@@ -265,7 +265,7 @@ All multi-byte fields are encoded as little endian.
 
     Jiffy StreamReader subclass of Stream(). Decompresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
     
-###StreamReader() constructor arguments:
+### StreamReader() constructor arguments:
  
     byteStream:
         A previously encoded ByteStream object containing a compressed stream,
