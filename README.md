@@ -55,11 +55,11 @@ Group
     
 ## Examples
 
-examples/encode_to_file.py      Encode some real LiDAR data from Ouster OS0-128 LiDAR to a file.
+examples/encode_to_file.py:      Encode some real LiDAR data from Ouster OS0-128 LiDAR to a file.
 
-examples/decode_from_file.py    Decode a .jiffy file and display each frame of scans.
+examples/decode_from_file.py:    Decode a .jiffy file and display each frame of scans.
 
-test.py                         Encode and decode using a bytes string (b'') instead of a file.
+test.py:                         Encode and decode using a bytes string (b'') instead of a file.
 
 ## Jiffy Constants
 
