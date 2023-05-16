@@ -26,7 +26,7 @@ def encode_to_file(fname, dataset_path):
 
     scans_per_frame = 7               # Frames contain first- and second-return range, signal, and reflectivity plus ambient infrared.
     precision = [5, 5, 1, 1, 1, 1, 1] # Use 5 millimeter precision for ranges. Don't quantize anything else.
-    frames_per_group = 1              # Force a keyframe every 10 frames.
+    frames_per_group = 10             # Force a keyframe every 10 frames.
 
     # Open the jiffy encoding stream.    
     stream = jf.StreamWriter(fname, scans_per_frame, frames_per_group, precision=precision)

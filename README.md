@@ -59,7 +59,9 @@ Look at test.py for an example of how to compress and decompress a LiDAR sequenc
 
 ## Jiffy Constants
 
-    VERSION = np.uint16(1.0 * 256)  Current Jiffy version.
+    VERSION_MAJOR = 0
+    VERSION_MINOR = 3
+    VERSION = np.uint16(VERSION_MAJOR * 256 + VERSION_MINOR)
     MAGIC = b'JFFY'                 'Magic Number' for Jiffy encoded data/files.
     ADAPTIVE = 0                    Encode scan as I or P according to adaptive scan algorithm.
     ISCAN    = 1                    Encode scan as I only.
@@ -71,6 +73,8 @@ Look at test.py for an example of how to compress and decompress a LiDAR sequenc
 
 
     Compresses/decompresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
+    A user should typically use either StreamReader() or StreamWriter, rather than Stream(),
+    to avoid ambiguities regarding file handling.
     
 ### Stream() Constructor Arguments
 
@@ -107,18 +111,10 @@ Look at test.py for an example of how to compress and decompress a LiDAR sequenc
         potentially aid in error recovery when decoding in future versions.
 
     byteStream:
-        A previously encoded ByteStream object containing a compressed stream,
-        a byte string (b''), a file name, or an open file.
+        A Jiffy ByteStream object containing a compressed stream for decode, or
+        an empty ByteStream object to hold the encoded stream.
         
-        On encode, Stream will append encoded data to any data already in byteStream,
-        except in the case where byteStream is a filename to open. If byteStream is a
-        filename, it will be opened in wb+ mode, and any existing data will be lost.
-        If an open file is used, it must be opened in rb+ or wb+ modes. 
-        
-        On decode, Stream will extract encoded data from byteStream, producing 
-        decoded frames.
-        byteStream defaults to using an empty bytes object (b'').
-
+       
     precision:  
         A scalar precision value to apply to all scan types, or a list of 
         precision values, one for each scan type. Precision is used to quantize 
@@ -258,3 +254,45 @@ All multi-byte fields are encoded as little endian.
                                                             all others in the group are adaptive
 
     framePrecisions uint8,      scansPerFrame   list of precision values, one for each scan type
+
+## Jiffy Stream Reader Class
+
+    StreamReader( byteStream:ByteStream, *args, **kwargs )
+
+    Jiffy StreamReader subclass of Stream(). Decompresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
+    
+###StreamReader() constructor arguments:
+ 
+    byteStream:
+        A previously encoded ByteStream object containing a compressed stream,
+        a byte string (b''), a file name, or a file opened in mode 'rb+'.
+        
+        On decode, Stream will extract encoded data from byteStream, producing 
+        decoded frames.
+    *args:
+        Remaining arguments are passed to the Stream constructor.
+    **kwargs:
+        Remaining keyword arguments are passed to the Stream constructor.
+
+    
+## Stream Writer Class
+
+        StreamWriter( byteStream:ByteStream, *args, **kwargs )
+
+    Jiffy StreamWriter subclass of Stream(). Compresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
+    
+### StreamWriter() constructor arguments:
+ 
+    byteStream:
+        A byte string (b''), a file name, or a file opened in mode 'wb+'.
+        
+        StreamWriter will append encoded data to any data already in byteStream,
+        except in the case where byteStream is a filename to open. If byteStream is a
+        filename, it will be opened in wb+ mode, and any existing data will be lost.
+        If an open file is used, it must be opened in wb+ mode. 
+        
+        byteStream defaults to using an empty bytes object (b'').
+    *args:
+        Remaining arguments are passed to the Stream constructor.
+    **kwargs:
+        Remaining keyword arguments are passed to the Stream constructor.

@@ -25,7 +25,7 @@ import sys
 '''
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 2
+VERSION_MINOR = 3
 VERSION = np.uint16(VERSION_MAJOR * 256 + VERSION_MINOR)
 MAGIC = b'JFFY'
 
@@ -864,7 +864,7 @@ class Scan:
                 To get the number of bytes written to byteStream, use Scan.nBytes.
 
         '''
-        self.codecState.iScan = mode
+        self.codecState.iScan = bool(mode)
 
         # Write a uint32 to byteStream indicating the scan type and encoded scan length
         # We don't know the encoded scan length yet, so we'll write a placeholder
@@ -882,7 +882,7 @@ class Scan:
     
         # Update the scan length in the byteStream
 
-        if mode:
+        if self.isIscan:
             # If the mode is an IScan, the scan length is negative
             nBytes = -nBytes
 
@@ -897,11 +897,8 @@ class Scan:
         # Read the scan length from the byteStream
         nBytes = self.byteStream.readField(dtype=np.int32)
 
-        if nBytes < 0:
-            self.codecState.iScan = True
-            nBytes = -nBytes
-        else:
-            self.codecState.iScan = False
+        self.codecState.iScan = nBytes < 0
+        nBytes = np.abs(nBytes)    
 
         # decode a scan
         self.nBytes = nBytes
@@ -920,7 +917,9 @@ class Stream:
 
     )
         Jiffy Stream codec class. Compresses/decompresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
-        
+        A user should typically use either StreamReader() or StreamWriter, rather than Stream(),
+        to avoid ambiguities regarding file handling.
+
         Stream() constructor arguments:
         -------------------------------
 
@@ -957,7 +956,8 @@ class Stream:
             potentially aid in error recovery when decoding in future versions.
 
         byteStream:
-            A previously encoded ByteStream object containing a compressed stream.
+            A Jiffy ByteStream object containing a compressed stream for decode, or
+            an empty ByteStream object to hold the encoded stream.
 
         precision:  
             A scalar precision value to apply to all scan types, or a list of 
@@ -1269,7 +1269,7 @@ class StreamReader(Stream):
     '''
         StreamReader( byteStream:ByteStream, *args, **kwargs )
 
-        Jiffy StreamReader class. Decompresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
+        Jiffy StreamReader subclass of Stream(). Decompresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
         
         StreamReader() constructor arguments:
         -------------------------------
@@ -1293,7 +1293,7 @@ class StreamWriter(Stream):
     '''
         StreamWriter( byteStream:ByteStream, *args, **kwargs )
 
-        Jiffy StreamWriter class. Compresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
+        Jiffy StreamWriter subclass of Stream(). Compresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
         
         StreamWriter() constructor arguments:
         -------------------------------
