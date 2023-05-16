@@ -1312,8 +1312,21 @@ class StreamWriter(Stream):
             Remaining keyword arguments are passed to the Stream constructor.
     '''
     def __init__(self, byteStream, *args, **kwargs):
+        
         if isinstance(byteStream, str): 
             if os.path.exists(byteStream):
                 os.remove(byteStream)
             byteStream = ByteStream(byteStream)
+        elif isinstance(byteStream, bytes):
+            byteStream = ByteStream(byteStream)
+        elif isinstance(byteStream, io.IOBase):
+            if byteStream.mode != 'wb+':
+                raise ValueError('StreamWriter requires a file opened in wb+ mode.')
+            byteStream = ByteStream(byteStream)
+        elif isinstance(byteStream, ByteStream):
+            pass
+        else:
+            raise TypeError('byteStream must be a ByteStream, a file name, a file opened in wb+ mode, or a byte string (b\'\').')
+
+
         super().__init__(byteStream=byteStream, *args, **kwargs)

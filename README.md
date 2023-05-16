@@ -55,7 +55,9 @@ Group
     
 ## Examples
 
-Look at test.py for an example of how to compress and decompress a LiDAR sequence to a file or byte string.
+examples/encode_to_file.py       Encode some real LiDAR data from Ouster OS0-128 LiDAR to a file.
+
+examples/decode_from_file.py    Decode a .jiffy file and display each frame of scans.
 
 ## Jiffy Constants
 

@@ -32,7 +32,7 @@ def encode_to_file(fname, dataset_path):
     stream = jf.StreamWriter(fname, scans_per_frame, frames_per_group, precision=precision)
 
     original_size_bytes = 0
-    for fnum, frame in enumerate(get_frames(dataset_path)):
+    for frame in get_frames(dataset_path):
         # Encode the latest frame.
         stream.encode(frame[:scans_per_frame])
 
