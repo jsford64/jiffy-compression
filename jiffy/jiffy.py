@@ -4,7 +4,7 @@ from collections import OrderedDict
 import pyfastpfor as p4
 import zstandard as zstd
 import os
-from io import BytesIO,BufferedRandom, BufferedReader, BufferedWriter
+from io import IOBase,BytesIO,BufferedRandom, BufferedReader, BufferedWriter
 from os import path
 import sys
 
@@ -1319,7 +1319,7 @@ class StreamWriter(Stream):
             byteStream = ByteStream(byteStream)
         elif isinstance(byteStream, bytes):
             byteStream = ByteStream(byteStream)
-        elif isinstance(byteStream, io.IOBase):
+        elif isinstance(byteStream, IOBase):
             if byteStream.mode != 'wb+':
                 raise ValueError('StreamWriter requires a file opened in wb+ mode.')
             byteStream = ByteStream(byteStream)
