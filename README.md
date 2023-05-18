@@ -95,7 +95,7 @@ test.py:                         Encode and decode using a bytes string (b'') in
 
 
     Compresses/decompresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
-    A user should typically use either StreamReader() or StreamWriter, rather than Stream(),
+    A user should typically use either StreamReader() or StreamWriter(), rather than Stream(),
     to avoid ambiguities regarding file handling.
     
 ### Stream() Constructor Arguments
