@@ -1,3 +1,16 @@
+Metadata-Version: 2.1
+Name: jiffy-lidar
+Version: 0.3.0
+Summary: Jiffy-lidar: a fast, lossless SIMD compression codec for LiDAR streams
+Author-email: Jeff Ford <jsford64@gmail.com>, Jordan Ford <jsford94@gmail.com>
+Project-URL: Homepage, https://github.com/jsford64/jiffy-compression
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
 ![image](https://github.com/jsford64/jiffy-compression/assets/9753764/e35eca31-fb40-4987-8316-fc2f611d53c2)
 
 # jiffy-compression
@@ -20,26 +33,8 @@ Jiffy was written and tested using Python 3.10.
 
     PyFastPfor:
 
-        ARM64/MacOS:    git@github.com:jsford64/PyFastPFor-OSX-ARM64.git
-        Other:          git@github.com:searchivarius/PyFastPFor.git
-
-## Installation
-
-### MacOS or Arm64
-Pyfastpfor will not compile and install without C++ source code modifications
-on these platforms.
-We have made appropriate modifications in a fork of pyfastpfor. To install this version
-of pyfastpfor on MacOS or Arm64 prior to installing jiffy-lidar:
-
-    git clone git@github.com:jsford64/PyFastPFor-OSX-ARM64.git
-    cd PyFastPFor-OSX-ARM64/python_bindings
-    pip install .
-
-Then continue with installing jiffy-lidar as shown in the following section.
-
-### Intel-based Windows & Linux Platforms
-
-pip install jiffy-lidar
+        ARM/MacOS:  git@github.com:jsford64/PyFastPFor-OSX-ARM64.git
+        Intel:      git@github.com:searchivarius/PyFastPFor.git
 
 
 ## Definitions
@@ -281,8 +276,7 @@ All multi-byte fields are encoded as little endian.
 
     StreamReader( byteStream:ByteStream, *args, **kwargs )
 
-    Jiffy StreamReader subclass of Stream(). Decompresses a LiDAR stream, 
-    a sequence of LiDAR scans of multiple scan types.
+    Jiffy StreamReader subclass of Stream(). Decompresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
     
 ### StreamReader() constructor arguments:
  
@@ -302,8 +296,7 @@ All multi-byte fields are encoded as little endian.
 
         StreamWriter( byteStream:ByteStream, *args, **kwargs )
 
-    Jiffy StreamWriter subclass of Stream(). Compresses a LiDAR stream, 
-    a sequence of LiDAR scans of multiple scan types.
+    Jiffy StreamWriter subclass of Stream(). Compresses a LiDAR stream, a sequence of LiDAR scans of multiple scan types.
     
 ### StreamWriter() constructor arguments:
  

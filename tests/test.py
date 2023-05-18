@@ -4,7 +4,7 @@ import path
 sys.path.append(str(path.Path(__file__).abspath().parent)+'/examples')
 from encode_to_file import get_frames
 
-import jiffy as jf
+import jiffy-lidar as jf
 import numpy as np
 
 '''

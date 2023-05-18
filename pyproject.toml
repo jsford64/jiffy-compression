@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=67.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jiffy-lidar"
+version = "0.3.0"
+authors = [
+  { name="Jeff Ford", email="jsford64@gmail.com" },
+  { name="Jordan Ford", email="jsford94@gmail.com" },
+]
+description = "Jiffy-lidar: a fast, lossless SIMD compression codec for LiDAR streams"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "zstandard",
+    "numpy",
+    "pyfastpfor;platform_machine == 'x86_64' and sys_platform != 'darwin'",
+    "PyFastPFor-OSX-ARM64;platform_machine != 'x86_64' or sys_platform == 'darwin'",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/jsford64/jiffy-compression"

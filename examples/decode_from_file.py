@@ -4,7 +4,7 @@ import os
 import sys
 import path
 sys.path.append(path.Path(__file__).abspath().parent.parent)
-import jiffy as jf
+import jiffy-lidar as jf
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
