@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jiffy-lidar"
-version = "0.3.0"
+version = "0.3.1"
 authors = [
   { name="Jeff Ford", email="jsford64@gmail.com" },
   { name="Jordan Ford", email="jsford94@gmail.com" },
@@ -21,7 +21,6 @@ dependencies = [
     "zstandard",
     "numpy",
     "pyfastpfor;platform_machine == 'x86_64' and sys_platform != 'darwin'",
-    "PyFastPFor-OSX-ARM64;platform_machine != 'x86_64' or sys_platform == 'darwin'",
 ]
 
 [project.urls]
