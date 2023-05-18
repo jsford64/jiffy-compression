@@ -1,6 +1,6 @@
 ![image](https://github.com/jsford64/jiffy-compression/assets/9753764/e35eca31-fb40-4987-8316-fc2f611d53c2)
 
-# jiffy-compression
+# jiffy-LiDAR
 Jiffy-lidar: a fast, lossless SIMD compression codec for LiDAR streams
 
 Read the peer-reviewed publication accepted for presentation at IEEE ICRA 2023 in London:
@@ -11,7 +11,7 @@ https://arxiv.org/pdf/2209.08196.pdf
 
 ## Dependencies
 
-Jiffy was written and tested using Python 3.10.
+Jiffy-lidar was written and tested using Python 3.10.
 
 ### Python Module Dependencies
 
