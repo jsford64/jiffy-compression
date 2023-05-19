@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: jiffy-lidar
-Version: 0.3.0
+Version: 0.3.1
 Summary: Jiffy-lidar: a fast, lossless SIMD compression codec for LiDAR streams
 Author-email: Jeff Ford <jsford64@gmail.com>, Jordan Ford <jsford94@gmail.com>
 Project-URL: Homepage, https://github.com/jsford64/jiffy-compression
