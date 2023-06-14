@@ -1,0 +1,11 @@
+LICENSE
+README.md
+pyproject.toml
+src/__init__.py
+src/jiffyCodec.py
+src/jiffyCodec.egg-info/PKG-INFO
+src/jiffyCodec.egg-info/SOURCES.txt
+src/jiffyCodec.egg-info/dependency_links.txt
+src/jiffyCodec.egg-info/requires.txt
+src/jiffyCodec.egg-info/top_level.txt
+tests/test.py

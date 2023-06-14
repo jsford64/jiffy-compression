@@ -3,12 +3,11 @@
 import os
 import sys
 import path
-sys.path.append(path.Path(__file__).abspath().parent.parent)
-import jiffy-lidar as jf
+import jiffyCodec as jf
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-from utils import DatasetReader
+from dataset_reader import DatasetReader
 
 def decode_from_file(jiffy_file):
     stream = jf.StreamReader(byteStream=jiffy_file)

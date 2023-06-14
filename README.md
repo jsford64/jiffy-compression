@@ -1,7 +1,7 @@
 ![image](https://github.com/jsford64/jiffy-compression/assets/9753764/e35eca31-fb40-4987-8316-fc2f611d53c2)
 
-# Jiffy-LiDAR
-Jiffy-lidar: a fast, lossless SIMD compression codec for LiDAR streams
+# jiffyCodec
+jiffyCodec: a fast, lossless SIMD compression codec for LiDAR streams
 
 Read the peer-reviewed publication accepted for presentation at IEEE ICRA 2023 in London:
 'Lossless SIMD Compression of LiDAR Range and Attribute Scan Sequences' here: 
@@ -11,7 +11,7 @@ https://arxiv.org/pdf/2209.08196.pdf
 
 ## Dependencies
 
-Jiffy-lidar was written and tested using Python 3.10.
+jiffyCodec was written and tested using Python 3.10.
 
 ### Python Module Dependencies
 
@@ -29,17 +29,17 @@ Jiffy-lidar was written and tested using Python 3.10.
 Pyfastpfor will not compile and install without C++ source code modifications
 on these platforms.
 We have made appropriate modifications in a fork of pyfastpfor. To install this version
-of pyfastpfor on MacOS or Arm64 prior to installing jiffy-lidar:
+of pyfastpfor on MacOS or Arm64 prior to installing jiffyCodec:
 
     git clone git@github.com:jsford64/PyFastPFor-OSX-ARM64.git
     cd PyFastPFor-OSX-ARM64/python_bindings
     pip install .
 
-Then continue with installing jiffy-lidar as shown in the following section.
+Then continue with installing jiffyCodec as shown in the following section.
 
 ### Intel-based Windows & Linux Platforms
 
-pip install jiffy-lidar
+pip install jiffyCodec
 
 
 ## Definitions

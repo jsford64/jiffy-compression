@@ -3,13 +3,13 @@ requires = ["setuptools>=67.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "jiffy-lidar"
-version = "0.3.1"
+name = "jiffyCodec"
+version = "0.1.0"
 authors = [
   { name="Jeff Ford", email="jsford64@gmail.com" },
   { name="Jordan Ford", email="jsford94@gmail.com" },
 ]
-description = "Jiffy-lidar: a fast, lossless SIMD compression codec for LiDAR streams"
+description = "jiffyCodec: a fast, lossless SIMD compression codec for LiDAR streams"
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [

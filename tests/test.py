@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import sys
 import path
-sys.path.append(str(path.Path(__file__).abspath().parent)+'/examples')
+sys.path.append(str(path.Path(__file__).abspath().parent.parent)+'/examples')
 from encode_to_file import get_frames
 
-import jiffy-lidar as jf
+import jiffyCodec as jf
 import numpy as np
 
 '''
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     framesPerGroup = 10     # First frame of each group is intra-coded, all others are adaptively I or P coded
     precision = [5, 5, 1, 1, 1, 1, 1] # Use 5 millimeter precision for ranges. Don't quantize anything else.
 
-    dataset_path = str(path.Path(__file__).abspath().parent+'/data/os0-128.npz')
+    dataset_path = str(path.Path(__file__).abspath().parent.parent+'/data/os0-128.npz')
 
     # Open the jiffy encoding stream, initializing the encoded byteStream with an empty bytes string b'', not a file.
     stream = jf.StreamWriter(b'', scansPerFrame, framesPerGroup, precision=precision)
